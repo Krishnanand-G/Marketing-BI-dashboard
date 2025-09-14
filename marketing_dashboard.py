@@ -333,10 +333,15 @@ def main():
                 st.write("Environment variable check failed")
             
             try:
-                secrets_key = st.secrets.get("GEMINI_API_KEY", "Not found")
-                st.write(f"Streamlit secrets GEMINI_API_KEY: {'Found' if secrets_key != 'Not found' else 'Not found'}")
-            except:
-                st.write("Streamlit secrets check failed")
+                st.write(f"Has secrets attr: {hasattr(st, 'secrets')}")
+                if hasattr(st, 'secrets'):
+                    st.write(f"Available secrets: {list(st.secrets.keys())}")
+                    secrets_key = st.secrets.get("GEMINI_API_KEY", "Not found")
+                    st.write(f"Streamlit secrets GEMINI_API_KEY: {'Found' if secrets_key != 'Not found' else 'Not found'}")
+                else:
+                    st.write("No secrets available")
+            except Exception as e:
+                st.write(f"Streamlit secrets check failed: {e}")
             
             st.write("**To fix this issue:**")
             st.write("1. For local development: Create a .env file with GEMINI_API_KEY")
