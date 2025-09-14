@@ -14,7 +14,6 @@ class MarketingDataProcessor:
         self.final_data = None
         
     def load_data(self):
-        """Load all CSV files"""
         print("Loading data...")
         self.fb_data = pd.read_csv('Data/Facebook.csv')
         self.google_data = pd.read_csv('Data/Google.csv')
@@ -23,7 +22,6 @@ class MarketingDataProcessor:
         print("Data loaded successfully!")
         
     def clean_data(self):
-        """Clean and standardize data"""
         print("Cleaning data...")
         
         marketing_dfs = [self.fb_data, self.google_data, self.tiktok_data]
@@ -83,7 +81,7 @@ class MarketingDataProcessor:
         self.combined_marketing['cpm'] = (self.combined_marketing['spend'] / self.combined_marketing['impression'] * 1000).round(2)
         
         self.business_data['avg_order_value'] = (self.business_data['total_revenue'] / self.business_data['num_of_orders']).round(2)
-        self.business_data['customer_acquisition_cost'] = 0  # Will be calculated after joining
+        self.business_data['customer_acquisition_cost'] = 0
         self.business_data['gross_margin'] = ((self.business_data['gross_profit'] / self.business_data['total_revenue']) * 100).round(2)
         self.business_data['new_customer_rate'] = ((self.business_data['new_customers'] / self.business_data['num_of_orders']) * 100).round(2)
         
@@ -149,7 +147,6 @@ if __name__ == "__main__":
     processor = MarketingDataProcessor()
     final_data, marketing_data = processor.process_all()
     
-    # Save processed data
     final_data.to_csv('processed_business_data.csv', index=False)
     marketing_data.to_csv('processed_marketing_data.csv', index=False)
     

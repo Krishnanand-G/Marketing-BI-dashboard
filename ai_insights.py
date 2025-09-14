@@ -10,7 +10,6 @@ class AIInsightsGenerator:
         self.is_configured = False
         
     def initialize(self):
-        """Initialize Gemini API"""
         if configure_gemini():
             self.model = get_gemini_model()
             self.is_configured = True
@@ -18,12 +17,10 @@ class AIInsightsGenerator:
         return False
     
     def generate_performance_summary(self, business_data, marketing_data, selected_date_range):
-        """Generate AI-powered performance summary"""
         if not self.is_configured:
             return self._get_fallback_summary(business_data, marketing_data, selected_date_range)
         
         try:
-            # Prepare data summary for AI analysis
             start_date = pd.to_datetime(selected_date_range[0])
             end_date = pd.to_datetime(selected_date_range[1])
             
@@ -37,7 +34,6 @@ class AIInsightsGenerator:
                 (marketing_data['date'] <= end_date)
             ]
             
-            # Calculate key metrics
             total_revenue = filtered_business['total_revenue'].sum()
             total_spend = filtered_business['spend'].sum()
             roas = filtered_business['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
@@ -45,14 +41,12 @@ class AIInsightsGenerator:
             new_customers = filtered_business['new_customers'].sum()
             aov = total_revenue / total_orders if total_orders > 0 else 0
             
-            # Platform performance
             platform_performance = filtered_marketing.groupby('platform').agg({
                 'spend': 'sum',
                 'attributed_revenue': 'sum',
                 'roas': 'mean'
             }).round(2)
             
-            # Create prompt for AI analysis
             prompt = f"""
             Analyze this marketing data and provide concise insights:
 
@@ -85,7 +79,6 @@ class AIInsightsGenerator:
                 return f"AI analysis failed: {error_msg}. Using fallback analysis."
     
     def generate_trend_analysis(self, business_data, selected_date_range):
-        """Generate AI-powered trend analysis"""
         if not self.is_configured:
             return "AI analysis not available. Please configure Gemini API key."
         
@@ -98,12 +91,10 @@ class AIInsightsGenerator:
                 (business_data['date'] <= end_date)
             ].sort_values('date')
             
-            # Calculate trend metrics
             revenue_trend = filtered_data['total_revenue'].pct_change().mean() * 100
             spend_trend = filtered_data['spend'].pct_change().mean() * 100
             roas_trend = filtered_data['total_roas'].pct_change().mean() * 100
             
-            # Weekly performance
             weekly_data = filtered_data.groupby('day_of_week').agg({
                 'total_revenue': 'mean',
                 'total_roas': 'mean'
@@ -145,7 +136,6 @@ class AIInsightsGenerator:
                 return f"Trend analysis failed: {error_msg}"
     
     def generate_platform_recommendations(self, marketing_data, selected_date_range, selected_platforms):
-        """Generate AI-powered platform recommendations"""
         if not self.is_configured:
             return "AI analysis not available. Please configure Gemini API key."
         
@@ -159,7 +149,6 @@ class AIInsightsGenerator:
                 (marketing_data['platform'].isin(selected_platforms))
             ]
             
-            # Platform analysis
             platform_analysis = filtered_data.groupby('platform').agg({
                 'spend': 'sum',
                 'attributed_revenue': 'sum',
@@ -169,7 +158,6 @@ class AIInsightsGenerator:
                 'impression': 'sum'
             }).round(2)
             
-            # Tactic analysis
             tactic_analysis = filtered_data.groupby(['platform', 'tactic']).agg({
                 'roas': 'mean',
                 'spend': 'sum'
@@ -208,7 +196,6 @@ class AIInsightsGenerator:
                 return f"Platform analysis failed: {error_msg}"
     
     def chat_with_data(self, user_question, business_data, marketing_data, selected_date_range):
-        """Interactive chat with the data using AI"""
         if not self.is_configured:
             return "AI chat not available. Please configure Gemini API key."
         
@@ -226,7 +213,6 @@ class AIInsightsGenerator:
                 (marketing_data['date'] <= end_date)
             ]
             
-            # Prepare context
             total_revenue = filtered_business['total_revenue'].sum()
             total_spend = filtered_business['spend'].sum()
             roas = filtered_business['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
@@ -259,7 +245,6 @@ class AIInsightsGenerator:
                 return f"Chat analysis failed: {error_msg}"
     
     def _get_fallback_summary(self, business_data, marketing_data, selected_date_range):
-        """Fallback summary when AI is not available"""
         start_date = pd.to_datetime(selected_date_range[0])
         end_date = pd.to_datetime(selected_date_range[1])
         

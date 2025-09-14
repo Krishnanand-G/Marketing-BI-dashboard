@@ -8,18 +8,15 @@ from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-# Import AI insights
 from ai_insights import AIInsightsGenerator
 
-# Page configuration
 st.set_page_config(
     page_title="Marketing Intelligence Dashboard",
-    page_icon="📊",
+    page_icon="🧙‍♂️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
 st.markdown("""
 <style>
     .main-header {
@@ -64,7 +61,6 @@ def load_data():
         business_data = pd.read_csv('processed_business_data.csv')
         marketing_data = pd.read_csv('processed_marketing_data.csv')
         
-        # Convert date columns
         business_data['date'] = pd.to_datetime(business_data['date'])
         marketing_data['date'] = pd.to_datetime(marketing_data['date'])
         
@@ -318,15 +314,34 @@ def create_weekly_analysis(data, selected_date_range):
     return fig, weekly_data
 
 def main():
-    st.markdown('<h1 class="main-header">📊 Marketing Intelligence Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🧙‍♂️ Marketing Intelligence Dashboard</h1>', unsafe_allow_html=True)
     
     ai_generator = AIInsightsGenerator()
     ai_available = ai_generator.initialize()
     
     if ai_available:
-        st.success("Advanced AI Analytics Available ")
+        st.success("Advanced AI Analytics Available Powered by Google Gemini")
     else:
         st.warning("⚠️ Advanced Analytics Not Available - Configure API key for enhanced insights")
+        with st.expander("Debug Information"):
+            st.write("**Environment Check:**")
+            try:
+                import os
+                env_key = os.getenv('GEMINI_API_KEY')
+                st.write(f"Environment variable GEMINI_API_KEY: {'Found' if env_key else 'Not found'}")
+            except:
+                st.write("Environment variable check failed")
+            
+            try:
+                secrets_key = st.secrets.get("GEMINI_API_KEY", "Not found")
+                st.write(f"Streamlit secrets GEMINI_API_KEY: {'Found' if secrets_key != 'Not found' else 'Not found'}")
+            except:
+                st.write("Streamlit secrets check failed")
+            
+            st.write("**To fix this issue:**")
+            st.write("1. For local development: Create a .env file with GEMINI_API_KEY")
+            st.write("2. For Streamlit Cloud: Add GEMINI_API_KEY to your app's secrets")
+            st.write("3. Redeploy your application")
     
     business_data, marketing_data = load_data()
     
@@ -419,14 +434,12 @@ def main():
     trends_chart = create_revenue_trends_chart(business_data, selected_date_range)
     st.plotly_chart(trends_chart, use_container_width=True)
     
-    # Platform analysis
     st.header("Platform Performance")
     platform_chart, platform_summary = create_platform_analysis(
         marketing_data, selected_date_range, selected_platforms, selected_states
     )
     st.plotly_chart(platform_chart, use_container_width=True)
     
-    # Display platform summary table
     st.subheader("Platform Summary Table")
     platform_summary_display = platform_summary.round(2)
     st.dataframe(platform_summary_display, use_container_width=True)
@@ -465,7 +478,6 @@ def main():
     with col3:
         st.info(f"**Best Day of Week:** {best_day}")
     
-    # Footer
     st.markdown("---")
     st.markdown(
         """

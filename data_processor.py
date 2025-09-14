@@ -14,7 +14,6 @@ class MarketingDataProcessor:
         self.final_data = None
         
     def load_data(self):
-        """Load all CSV files"""
         print("Loading data...")
         self.fb_data = pd.read_csv('Data/Facebook.csv')
         self.google_data = pd.read_csv('Data/Google.csv')
@@ -23,38 +22,29 @@ class MarketingDataProcessor:
         print("Data loaded successfully!")
         
     def clean_data(self):
-        """Clean and standardize data"""
         print("Cleaning data...")
         
-        # Clean marketing data
         marketing_dfs = [self.fb_data, self.google_data, self.tiktok_data]
         platform_names = ['Facebook', 'Google', 'TikTok']
         
         for i, df in enumerate(marketing_dfs):
-            # Convert date to datetime
             df['date'] = pd.to_datetime(df['date'])
             
-            # Add platform column
             df['platform'] = platform_names[i]
             
-            # Clean column names (remove spaces)
             df.columns = df.columns.str.replace(' ', '_')
             
-            # Ensure numeric columns are numeric
             numeric_cols = ['impression', 'clicks', 'spend', 'attributed_revenue']
             for col in numeric_cols:
                 if col in df.columns:
                     df[col] = pd.to_numeric(df[col], errors='coerce')
         
-        # Clean business data
         self.business_data['date'] = pd.to_datetime(self.business_data['date'])
         
-        # Clean column names
         self.business_data.columns = self.business_data.columns.str.replace('# of orders', 'num_of_orders')
         self.business_data.columns = self.business_data.columns.str.replace('# of new orders', 'num_of_new_orders')
         self.business_data.columns = self.business_data.columns.str.replace(' ', '_')
         
-        # Ensure numeric columns are numeric
         numeric_cols = ['num_of_orders', 'num_of_new_orders', 'new_customers', 'total_revenue', 'gross_profit', 'COGS']
         for col in numeric_cols:
             if col in self.business_data.columns:
@@ -63,17 +53,14 @@ class MarketingDataProcessor:
         print("Data cleaning completed!")
         
     def combine_marketing_data(self):
-        """Combine all marketing platforms into one dataset"""
         print("Combining marketing data...")
         
-        # Combine all marketing data
         self.combined_marketing = pd.concat([
             self.fb_data,
             self.google_data, 
             self.tiktok_data
         ], ignore_index=True)
         
-        # Aggregate by date, platform, state, and tactic
         self.combined_marketing = self.combined_marketing.groupby([
             'date', 'platform', 'state', 'tactic'
         ]).agg({
@@ -86,16 +73,13 @@ class MarketingDataProcessor:
         print("Marketing data combined successfully!")
         
     def create_metrics(self):
-        """Create derived metrics and KPIs"""
         print("Creating metrics and KPIs...")
         
-        # Marketing metrics
         self.combined_marketing['ctr'] = (self.combined_marketing['clicks'] / self.combined_marketing['impression'] * 100).round(2)
         self.combined_marketing['cpc'] = (self.combined_marketing['spend'] / self.combined_marketing['clicks']).round(2)
         self.combined_marketing['roas'] = (self.combined_marketing['attributed_revenue'] / self.combined_marketing['spend']).round(2)
         self.combined_marketing['cpm'] = (self.combined_marketing['spend'] / self.combined_marketing['impression'] * 1000).round(2)
         
-        # Business metrics
         self.business_data['avg_order_value'] = (self.business_data['total_revenue'] / self.business_data['num_of_orders']).round(2)
         self.business_data['customer_acquisition_cost'] = 0  # Will be calculated after joining
         self.business_data['gross_margin'] = ((self.business_data['gross_profit'] / self.business_data['total_revenue']) * 100).round(2)
@@ -104,10 +88,8 @@ class MarketingDataProcessor:
         print("Metrics created successfully!")
         
     def join_data(self):
-        """Join marketing and business data"""
         print("Joining marketing and business data...")
         
-        # Aggregate marketing data by date for joining
         daily_marketing = self.combined_marketing.groupby('date').agg({
             'impression': 'sum',
             'clicks': 'sum',
@@ -115,7 +97,6 @@ class MarketingDataProcessor:
             'attributed_revenue': 'sum'
         }).reset_index()
         
-        # Join with business data
         self.final_data = pd.merge(
             self.business_data, 
             daily_marketing, 
@@ -123,12 +104,10 @@ class MarketingDataProcessor:
             how='left'
         )
         
-        # Fill missing marketing data with 0
         marketing_cols = ['impression', 'clicks', 'spend', 'attributed_revenue']
         for col in marketing_cols:
             self.final_data[col] = self.final_data[col].fillna(0)
         
-        # Calculate additional metrics
         self.final_data['total_roas'] = np.where(
             self.final_data['spend'] > 0,
             self.final_data['attributed_revenue'] / self.final_data['spend'],
@@ -145,7 +124,6 @@ class MarketingDataProcessor:
             0
         ).round(2)
         
-        # Add time-based features
         self.final_data['day_of_week'] = self.final_data['date'].dt.day_name()
         self.final_data['week'] = self.final_data['date'].dt.isocalendar().week
         self.final_data['month'] = self.final_data['date'].dt.month
@@ -153,7 +131,6 @@ class MarketingDataProcessor:
         print("Data joining completed!")
         
     def process_all(self):
-        """Run the complete data processing pipeline"""
         self.load_data()
         self.clean_data()
         self.combine_marketing_data()
@@ -166,12 +143,10 @@ class MarketingDataProcessor:
         
         return self.final_data, self.combined_marketing
 
-# Usage
 if __name__ == "__main__":
     processor = MarketingDataProcessor()
     final_data, marketing_data = processor.process_all()
     
-    # Save processed data
     final_data.to_csv('processed_business_data.csv', index=False)
     marketing_data.to_csv('processed_marketing_data.csv', index=False)
     
