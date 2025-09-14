@@ -13,8 +13,8 @@ from ai_insights import AIInsightsGenerator
 
 # Page configuration
 st.set_page_config(
-    page_title="AI-Powered Marketing Intelligence Dashboard",
-    page_icon="🤖",
+    page_title="Marketing Intelligence Dashboard",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -29,7 +29,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
     }
-    .ai-section {
+    .analytics-section {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 1rem;
         border-radius: 0.5rem;
@@ -48,7 +48,7 @@ st.markdown("""
     .stSelectbox > div > div {
         background-color: white;
     }
-    .ai-insight-box {
+    .insight-box {
         background-color: #f8f9ff;
         border-left: 4px solid #667eea;
         padding: 1rem;
@@ -60,7 +60,6 @@ st.markdown("""
 
 @st.cache_data
 def load_data():
-    """Load and cache the processed data"""
     try:
         business_data = pd.read_csv('processed_business_data.csv')
         marketing_data = pd.read_csv('processed_marketing_data.csv')
@@ -75,8 +74,6 @@ def load_data():
         return None, None
 
 def create_kpi_cards(data, selected_date_range):
-    """Create KPI cards for the selected period"""
-    # Convert date range to datetime
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -90,7 +87,7 @@ def create_kpi_cards(data, selected_date_range):
     with col1:
         total_revenue = filtered_data['total_revenue'].sum()
         st.metric(
-            label="💰 Total Revenue",
+            label="Total Revenue",
             value=f"${total_revenue:,.0f}",
             delta=f"{filtered_data['total_revenue'].mean():.0f}/day"
         )
@@ -98,7 +95,7 @@ def create_kpi_cards(data, selected_date_range):
     with col2:
         total_orders = filtered_data['num_of_orders'].sum()
         st.metric(
-            label="📦 Total Orders",
+            label="Total Orders",
             value=f"{total_orders:,}",
             delta=f"{filtered_data['num_of_orders'].mean():.0f}/day"
         )
@@ -107,7 +104,7 @@ def create_kpi_cards(data, selected_date_range):
         total_spend = filtered_data['spend'].sum()
         roas = filtered_data['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
         st.metric(
-            label="🎯 ROAS",
+            label="ROAS",
             value=f"{roas:.2f}x",
             delta=f"${total_spend:,.0f} spend"
         )
@@ -115,7 +112,7 @@ def create_kpi_cards(data, selected_date_range):
     with col4:
         new_customers = filtered_data['new_customers'].sum()
         st.metric(
-            label="👥 New Customers",
+            label="New Customers",
             value=f"{new_customers:,}",
             delta=f"{filtered_data['new_customers'].mean():.0f}/day"
         )
@@ -123,14 +120,12 @@ def create_kpi_cards(data, selected_date_range):
     with col5:
         avg_order_value = filtered_data['total_revenue'].sum() / total_orders if total_orders > 0 else 0
         st.metric(
-            label="💵 AOV",
+            label="AOV",
             value=f"${avg_order_value:.0f}",
             delta=f"{(filtered_data['gross_margin'].mean()):.1f}% margin"
         )
 
 def create_revenue_trends_chart(data, selected_date_range):
-    """Create revenue and marketing trends chart"""
-    # Convert date range to datetime
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -146,7 +141,6 @@ def create_revenue_trends_chart(data, selected_date_range):
                [{"secondary_y": False}, {"secondary_y": False}]]
     )
     
-    # Revenue trends
     fig.add_trace(
         go.Scatter(x=filtered_data['date'], y=filtered_data['total_revenue'], 
                   name='Total Revenue', line=dict(color='#1f77b4', width=3)),
@@ -158,21 +152,18 @@ def create_revenue_trends_chart(data, selected_date_range):
         row=1, col=1, secondary_y=True
     )
     
-    # Marketing spend vs revenue
     fig.add_trace(
         go.Scatter(x=filtered_data['spend'], y=filtered_data['total_revenue'],
                   mode='markers', name='Spend vs Revenue', marker=dict(color='#2ca02c', size=8)),
         row=1, col=2, secondary_y=False
     )
     
-    # Order volume
     fig.add_trace(
         go.Bar(x=filtered_data['date'], y=filtered_data['num_of_orders'],
                name='Orders', marker_color='#d62728'),
         row=2, col=1, secondary_y=False
     )
     
-    # ROAS performance
     fig.add_trace(
         go.Scatter(x=filtered_data['date'], y=filtered_data['total_roas'],
                   name='ROAS', line=dict(color='#9467bd', width=3)),
@@ -190,8 +181,6 @@ def create_revenue_trends_chart(data, selected_date_range):
     return fig
 
 def create_platform_analysis(marketing_data, selected_date_range, selected_platforms, selected_states):
-    """Create platform performance analysis"""
-    # Convert date range to datetime
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -202,7 +191,6 @@ def create_platform_analysis(marketing_data, selected_date_range, selected_platf
         (marketing_data['state'].isin(selected_states))
     ]
     
-    # Platform performance summary
     platform_summary = filtered_data.groupby('platform').agg({
         'spend': 'sum',
         'attributed_revenue': 'sum',
@@ -213,7 +201,6 @@ def create_platform_analysis(marketing_data, selected_date_range, selected_platf
         'cpc': 'mean'
     }).reset_index()
     
-    # Create subplots
     fig = make_subplots(
         rows=2, cols=2,
         subplot_titles=('Platform Spend Distribution', 'ROAS by Platform', 
@@ -222,28 +209,24 @@ def create_platform_analysis(marketing_data, selected_date_range, selected_platf
                [{"type": "bar"}, {"type": "bar"}]]
     )
     
-    # Spend distribution pie chart
     fig.add_trace(
         go.Pie(labels=platform_summary['platform'], values=platform_summary['spend'],
                name="Spend Distribution", hole=0.3),
         row=1, col=1
     )
     
-    # ROAS by platform
     fig.add_trace(
         go.Bar(x=platform_summary['platform'], y=platform_summary['roas'],
                name='ROAS', marker_color='#1f77b4'),
         row=1, col=2
     )
     
-    # CTR by platform
     fig.add_trace(
         go.Bar(x=platform_summary['platform'], y=platform_summary['ctr'],
                name='CTR', marker_color='#ff7f0e'),
         row=2, col=1
     )
     
-    # CPC by platform
     fig.add_trace(
         go.Bar(x=platform_summary['platform'], y=platform_summary['cpc'],
                name='CPC', marker_color='#2ca02c'),
@@ -258,8 +241,6 @@ def create_platform_analysis(marketing_data, selected_date_range, selected_platf
     return fig, platform_summary
 
 def create_tactic_analysis(marketing_data, selected_date_range, selected_platforms, selected_states):
-    """Create tactic performance analysis"""
-    # Convert date range to datetime
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -292,8 +273,6 @@ def create_tactic_analysis(marketing_data, selected_date_range, selected_platfor
     return fig, tactic_summary
 
 def create_weekly_analysis(data, selected_date_range):
-    """Create weekly performance analysis"""
-    # Convert date range to datetime
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -302,7 +281,6 @@ def create_weekly_analysis(data, selected_date_range):
         (data['date'] <= end_date)
     ].copy()
     
-    # Group by day of week
     weekly_data = filtered_data.groupby('day_of_week').agg({
         'total_revenue': 'mean',
         'num_of_orders': 'mean',
@@ -311,7 +289,6 @@ def create_weekly_analysis(data, selected_date_range):
         'total_roas': 'mean'
     }).reset_index()
     
-    # Order days properly
     day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     weekly_data['day_of_week'] = pd.Categorical(weekly_data['day_of_week'], categories=day_order, ordered=True)
     weekly_data = weekly_data.sort_values('day_of_week')
@@ -341,33 +318,28 @@ def create_weekly_analysis(data, selected_date_range):
     return fig, weekly_data
 
 def main():
-    # Header
-    st.markdown('<h1 class="main-header">🤖 AI-Powered Marketing Intelligence Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">📊 Marketing Intelligence Dashboard</h1>', unsafe_allow_html=True)
     
-    # Initialize AI insights
     ai_generator = AIInsightsGenerator()
     ai_available = ai_generator.initialize()
     
     if ai_available:
-        st.success("🤖 AI Insights Available - Powered by Google Gemini")
+        st.success("Advanced AI Analytics Available ")
     else:
-        st.warning("⚠️ AI Insights Not Available - Configure Gemini API key for enhanced analysis")
+        st.warning("⚠️ Advanced Analytics Not Available - Configure API key for enhanced insights")
     
-    # Load data
     business_data, marketing_data = load_data()
     
     if business_data is None or marketing_data is None:
         st.stop()
     
-    # Sidebar filters
-    st.sidebar.header("🎛️ Dashboard Controls")
+    st.sidebar.header("Dashboard Controls")
     
-    # Date range selector
     min_date = business_data['date'].min().date()
     max_date = business_data['date'].max().date()
     
     selected_date_range = st.sidebar.date_input(
-        "📅 Select Date Range",
+        "Select Date Range",
         value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date
@@ -376,26 +348,22 @@ def main():
     if len(selected_date_range) != 2:
         selected_date_range = (min_date, max_date)
     
-    # Platform selector
     available_platforms = marketing_data['platform'].unique().tolist()
     selected_platforms = st.sidebar.multiselect(
-        "🌐 Select Platforms",
+        "Select Platforms",
         options=available_platforms,
         default=available_platforms
     )
     
-    # State selector
     available_states = marketing_data['state'].unique().tolist()
     selected_states = st.sidebar.multiselect(
-        "🗺️ Select States",
+        "Select States",
         options=available_states,
         default=available_states
     )
     
-    # Metric selector
-    st.sidebar.header("📈 Key Metrics")
+    st.sidebar.header("Key Metrics")
     
-    # Calculate summary metrics for the selected period
     start_date = pd.to_datetime(selected_date_range[0])
     end_date = pd.to_datetime(selected_date_range[1])
     
@@ -412,91 +380,69 @@ def main():
     st.sidebar.metric("Total Marketing Spend", f"${total_spend:,.0f}")
     st.sidebar.metric("Overall ROAS", f"{total_roas:.2f}x")
     
-    # AI Chat Section
-    st.sidebar.header("💬 AI Chat Assistant")
-    user_question = st.sidebar.text_area(
-        "Ask AI about your data:",
-        placeholder="e.g., Which platform should I invest more in?",
-        height=100
-    )
     
-    if st.sidebar.button("🤖 Ask AI") and user_question:
-        with st.sidebar:
-            with st.spinner("AI is analyzing..."):
-                ai_response = ai_generator.chat_with_data(
-                    user_question, business_data, marketing_data, selected_date_range
-                )
-                st.success("AI Response:")
-                st.write(ai_response)
-    
-    # Main dashboard content
-    st.header("🎯 Executive Summary")
+    st.header("Executive Summary")
     create_kpi_cards(business_data, selected_date_range)
     
-    # AI-Powered Insights Section
-    st.header("🤖 AI-Powered Insights")
+    st.header("📈 Advanced Analytics")
     
-    tab1, tab2, tab3 = st.tabs(["📊 Performance Summary", "📈 Trend Analysis", "🎯 Platform Recommendations"])
+    tab1, tab2, tab3 = st.tabs(["Performance Summary", "Trend Analysis", "Platform Recommendations"])
     
     with tab1:
-        st.subheader("AI Performance Analysis")
-        if st.button("🔄 Generate AI Summary"):
-            with st.spinner("AI is analyzing your performance..."):
+        st.subheader("Performance Analysis")
+        if st.button("Generate Summary"):
+            with st.spinner("Analyzing performance..."):
                 ai_summary = ai_generator.generate_performance_summary(
                     business_data, marketing_data, selected_date_range
                 )
-                st.markdown(f'<div class="ai-insight-box">{ai_summary}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box">{ai_summary}</div>', unsafe_allow_html=True)
     
     with tab2:
-        st.subheader("AI Trend Analysis")
-        if st.button("📈 Analyze Trends"):
-            with st.spinner("AI is analyzing trends..."):
+        st.subheader("Trend Analysis")
+        if st.button("Analyze Trends"):
+            with st.spinner("Analyzing trends..."):
                 trend_analysis = ai_generator.generate_trend_analysis(
                     business_data, selected_date_range
                 )
-                st.markdown(f'<div class="ai-insight-box">{trend_analysis}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box">{trend_analysis}</div>', unsafe_allow_html=True)
     
     with tab3:
-        st.subheader("AI Platform Recommendations")
-        if st.button("🎯 Get Recommendations"):
-            with st.spinner("AI is generating recommendations..."):
+        st.subheader("Platform Recommendations")
+        if st.button("Get Recommendations"):
+            with st.spinner("Generating recommendations..."):
                 recommendations = ai_generator.generate_platform_recommendations(
                     marketing_data, selected_date_range, selected_platforms
                 )
-                st.markdown(f'<div class="ai-insight-box">{recommendations}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box">{recommendations}</div>', unsafe_allow_html=True)
     
-    st.header("📈 Performance Trends")
+    st.header("Performance Trends")
     trends_chart = create_revenue_trends_chart(business_data, selected_date_range)
     st.plotly_chart(trends_chart, use_container_width=True)
     
     # Platform analysis
-    st.header("🌐 Platform Performance")
+    st.header("Platform Performance")
     platform_chart, platform_summary = create_platform_analysis(
         marketing_data, selected_date_range, selected_platforms, selected_states
     )
     st.plotly_chart(platform_chart, use_container_width=True)
     
     # Display platform summary table
-    st.subheader("📊 Platform Summary Table")
+    st.subheader("Platform Summary Table")
     platform_summary_display = platform_summary.round(2)
     st.dataframe(platform_summary_display, use_container_width=True)
     
-    # Tactic analysis
-    st.header("🎯 Tactic Performance")
+    st.header("Tactic Performance")
     tactic_chart, tactic_summary = create_tactic_analysis(
         marketing_data, selected_date_range, selected_platforms, selected_states
     )
     st.plotly_chart(tactic_chart, use_container_width=True)
     
-    # Weekly analysis
-    st.header("📅 Weekly Performance Patterns")
+    st.header("Weekly Performance Patterns")
     weekly_chart, weekly_data = create_weekly_analysis(business_data, selected_date_range)
     st.plotly_chart(weekly_chart, use_container_width=True)
     
-    # Insights section
-    st.header("💡 Key Insights")
+    st.header("Key Insights")
     
-    # Calculate insights
     filtered_marketing = marketing_data[
         (marketing_data['date'] >= start_date) & 
         (marketing_data['date'] <= end_date) &
@@ -511,20 +457,20 @@ def main():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.info(f"🏆 **Best Performing Platform:** {best_platform}")
+        st.info(f"**Best Performing Platform:** {best_platform}")
     
     with col2:
-        st.info(f"🎯 **Best Performing Tactic:** {best_tactic}")
+        st.info(f"**Best Performing Tactic:** {best_tactic}")
     
     with col3:
-        st.info(f"📅 **Best Day of Week:** {best_day}")
+        st.info(f"**Best Day of Week:** {best_day}")
     
     # Footer
     st.markdown("---")
     st.markdown(
         """
         <div style='text-align: center; color: #666; padding: 1rem;'>
-            🤖 AI-Powered Marketing Intelligence Dashboard | Built with Streamlit, Plotly & Google Gemini
+             📊 Marketing Intelligence Dashboard | Built with Streamlit & Plotly
         </div>
         """, 
         unsafe_allow_html=True

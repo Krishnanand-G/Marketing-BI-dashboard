@@ -54,26 +54,21 @@ class AIInsightsGenerator:
             
             # Create prompt for AI analysis
             prompt = f"""
-            As a marketing intelligence expert, analyze this e-commerce performance data and provide actionable insights:
+            Analyze this marketing data and provide concise insights:
 
-            PERFORMANCE METRICS ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
-            - Total Revenue: ${total_revenue:,.0f}
-            - Marketing Spend: ${total_spend:,.0f}
-            - Overall ROAS: {roas:.2f}x
-            - Total Orders: {total_orders:,}
-            - New Customers: {new_customers:,}
-            - Average Order Value: ${aov:.0f}
+            METRICS ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
+            Revenue: ${total_revenue:,.0f} | Spend: ${total_spend:,.0f} | ROAS: {roas:.2f}x | Orders: {total_orders:,} | AOV: ${aov:.0f}
 
-            PLATFORM PERFORMANCE:
+            PLATFORMS:
             {platform_performance.to_string()}
 
-            Please provide:
-            1. A concise executive summary (2-3 sentences)
-            2. Top 3 actionable recommendations
-            3. Key risks or opportunities to watch
-            4. Specific budget allocation suggestions
+            Provide:
+            1. Executive summary (1-2 sentences)
+            2. Top 3 recommendations
+            3. Key risks/opportunities
+            4. Budget allocation
 
-            Focus on practical, data-driven insights that a marketing manager can implement immediately.
+            Keep response under 200 words. Be direct and actionable.
             """
             
             response = self.model.generate_content(prompt)
@@ -118,25 +113,22 @@ class AIInsightsGenerator:
             worst_day = weekly_data['total_revenue'].idxmin()
             
             prompt = f"""
-            Analyze these marketing performance trends and provide strategic insights:
+            Analyze trends and provide concise insights:
 
-            TREND ANALYSIS ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
-            - Revenue Growth Trend: {revenue_trend:.1f}% daily average
-            - Marketing Spend Trend: {spend_trend:.1f}% daily average  
-            - ROAS Trend: {roas_trend:.1f}% daily average
+            TRENDS ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
+            Revenue: {revenue_trend:.1f}% daily | Spend: {spend_trend:.1f}% daily | ROAS: {roas_trend:.1f}% daily
+            Best day: {best_day} | Worst day: {worst_day}
 
-            WEEKLY PERFORMANCE:
+            WEEKLY DATA:
             {weekly_data.to_string()}
-            Best performing day: {best_day}
-            Worst performing day: {worst_day}
 
-            Please provide:
-            1. Trend interpretation and implications
-            2. Seasonal patterns and timing recommendations
-            3. Budget optimization suggestions based on trends
-            4. Specific actions to improve performance
+            Provide:
+            1. Trend summary (1-2 sentences)
+            2. Timing recommendations
+            3. Budget optimization
+            4. Specific actions
 
-            Be specific and actionable in your recommendations.
+            Keep response under 150 words. Be direct.
             """
             
             response = self.model.generate_content(prompt)
@@ -184,22 +176,22 @@ class AIInsightsGenerator:
             }).round(2)
             
             prompt = f"""
-            As a digital marketing strategist, analyze this platform performance data and provide optimization recommendations:
+            Analyze platform performance and provide concise recommendations:
 
-            PLATFORM PERFORMANCE:
+            PLATFORMS:
             {platform_analysis.to_string()}
 
-            TACTIC PERFORMANCE:
+            TACTICS:
             {tactic_analysis.to_string()}
 
-            Please provide:
-            1. Platform ranking and performance assessment
-            2. Budget reallocation recommendations with specific percentages
-            3. Tactic optimization suggestions for each platform
-            4. Scaling opportunities and growth strategies
-            5. Risk mitigation for underperforming areas
+            Provide:
+            1. Platform ranking (top 3)
+            2. Budget reallocation (%)
+            3. Tactic optimizations
+            4. Scaling opportunities
+            5. Risk mitigation
 
-            Focus on maximizing ROI and providing specific, measurable recommendations.
+            Keep response under 200 words. Be specific with numbers.
             """
             
             response = self.model.generate_content(prompt)
@@ -240,19 +232,17 @@ class AIInsightsGenerator:
             roas = filtered_business['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
             
             prompt = f"""
-            You are a marketing intelligence AI assistant. Answer this question about the marketing data:
+            Answer this marketing question concisely:
 
             QUESTION: {user_question}
 
-            CONTEXT DATA ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
-            - Total Revenue: ${total_revenue:,.0f}
-            - Marketing Spend: ${total_spend:,.0f}
-            - ROAS: {roas:.2f}x
-            - Platforms: {list(filtered_marketing['platform'].unique())}
-            - States: {list(filtered_marketing['state'].unique())}
-            - Tactics: {list(filtered_marketing['tactic'].unique())}
+            DATA ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}):
+            Revenue: ${total_revenue:,.0f} | Spend: ${total_spend:,.0f} | ROAS: {roas:.2f}x
+            Platforms: {list(filtered_marketing['platform'].unique())}
+            States: {list(filtered_marketing['state'].unique())}
+            Tactics: {list(filtered_marketing['tactic'].unique())}
 
-            Provide a helpful, data-driven answer based on the available information. If the question requires data not available in the context, explain what additional data would be needed.
+            Provide a direct, data-driven answer. Keep it under 100 words.
             """
             
             response = self.model.generate_content(prompt)
@@ -285,14 +275,9 @@ class AIInsightsGenerator:
         return f"""
         **Performance Summary** ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})
         
-        **Key Metrics:**
-        - Total Revenue: ${total_revenue:,.0f}
-        - Marketing Spend: ${total_spend:,.0f}
-        - Overall ROAS: {roas:.2f}x
+        **Metrics:** Revenue: ${total_revenue:,.0f} | Spend: ${total_spend:,.0f} | ROAS: {roas:.2f}x
         
-        **Quick Insights:**
-        - Marketing efficiency is {'strong' if roas > 2.5 else 'moderate' if roas > 2.0 else 'needs improvement'}
-        - Revenue per dollar spent: ${total_revenue/total_spend:.2f}
+        **Efficiency:** {'Strong' if roas > 2.5 else 'Moderate' if roas > 2.0 else 'Needs improvement'} (${total_revenue/total_spend:.2f} per $1 spent)
         
-        *Note: Configure Gemini API key for AI-powered insights*
+        *Configure API key for advanced analytics*
         """
