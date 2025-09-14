@@ -6,15 +6,18 @@ import streamlit as st
 load_dotenv()
 
 def configure_gemini():
+    api_key = None
+    
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
-        print("GEMINI_API_KEY found in Streamlit secrets")
-    except:
+        print(f"GEMINI_API_KEY found in Streamlit secrets: {api_key[:10]}...")
+    except (KeyError, AttributeError) as e:
+        print(f"GEMINI_API_KEY not found in Streamlit secrets: {e}")
         api_key = os.getenv('GEMINI_API_KEY')
         if api_key:
-            print("GEMINI_API_KEY found in environment variables")
+            print(f"GEMINI_API_KEY found in environment variables: {api_key[:10]}...")
         else:
-            print("GEMINI_API_KEY not found in environment variables or secrets")
+            print("GEMINI_API_KEY not found in environment variables")
             api_key = "your_gemini_api_key_here"
     
     if api_key and api_key != "your_gemini_api_key_here":
