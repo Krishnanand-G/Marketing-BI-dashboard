@@ -14,8 +14,12 @@ def configure_gemini():
     if hasattr(st, 'secrets'):
         print("Available secrets keys:", list(st.secrets.keys()))
         try:
-            api_key = st.secrets["GEMINI_API_KEY"]
-            print(f"GEMINI_API_KEY found in Streamlit secrets: {api_key[:10]}...")
+            if "secrets" in st.secrets:
+                api_key = st.secrets["secrets"]["GEMINI_API_KEY"]
+                print(f"GEMINI_API_KEY found in Streamlit secrets (nested): {api_key[:10]}...")
+            else:
+                api_key = st.secrets["GEMINI_API_KEY"]
+                print(f"GEMINI_API_KEY found in Streamlit secrets (direct): {api_key[:10]}...")
         except KeyError as e:
             print(f"GEMINI_API_KEY not found in Streamlit secrets: {e}")
         except Exception as e:
