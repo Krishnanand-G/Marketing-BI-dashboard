@@ -10,6 +10,7 @@ class AIInsightsGenerator:
         self.is_configured = False
         
     def initialize(self):
+        """Initialize Gemini API"""
         if configure_gemini():
             self.model = get_gemini_model()
             self.is_configured = True
@@ -17,10 +18,12 @@ class AIInsightsGenerator:
         return False
     
     def generate_performance_summary(self, business_data, marketing_data, selected_date_range):
+        """Generate AI-powered performance summary"""
         if not self.is_configured:
             return self._get_fallback_summary(business_data, marketing_data, selected_date_range)
         
         try:
+            # Prepare data summary for AI analysis
             start_date = pd.to_datetime(selected_date_range[0])
             end_date = pd.to_datetime(selected_date_range[1])
             
@@ -34,6 +37,7 @@ class AIInsightsGenerator:
                 (marketing_data['date'] <= end_date)
             ]
             
+            # Calculate key metrics
             total_revenue = filtered_business['total_revenue'].sum()
             total_spend = filtered_business['spend'].sum()
             roas = filtered_business['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
@@ -41,12 +45,14 @@ class AIInsightsGenerator:
             new_customers = filtered_business['new_customers'].sum()
             aov = total_revenue / total_orders if total_orders > 0 else 0
             
+            # Platform performance
             platform_performance = filtered_marketing.groupby('platform').agg({
                 'spend': 'sum',
                 'attributed_revenue': 'sum',
                 'roas': 'mean'
             }).round(2)
             
+            # Create prompt for AI analysis
             prompt = f"""
             As a marketing intelligence expert, analyze this e-commerce performance data and provide actionable insights:
 
@@ -84,6 +90,7 @@ class AIInsightsGenerator:
                 return f"AI analysis failed: {error_msg}. Using fallback analysis."
     
     def generate_trend_analysis(self, business_data, selected_date_range):
+        """Generate AI-powered trend analysis"""
         if not self.is_configured:
             return "AI analysis not available. Please configure Gemini API key."
         
@@ -96,6 +103,7 @@ class AIInsightsGenerator:
                 (business_data['date'] <= end_date)
             ].sort_values('date')
             
+            # Calculate trend metrics
             revenue_trend = filtered_data['total_revenue'].pct_change().mean() * 100
             spend_trend = filtered_data['spend'].pct_change().mean() * 100
             roas_trend = filtered_data['total_roas'].pct_change().mean() * 100
@@ -226,6 +234,7 @@ class AIInsightsGenerator:
                 (marketing_data['date'] <= end_date)
             ]
             
+            # Prepare context
             total_revenue = filtered_business['total_revenue'].sum()
             total_spend = filtered_business['spend'].sum()
             roas = filtered_business['attributed_revenue'].sum() / total_spend if total_spend > 0 else 0
@@ -284,4 +293,6 @@ class AIInsightsGenerator:
         **Quick Insights:**
         - Marketing efficiency is {'strong' if roas > 2.5 else 'moderate' if roas > 2.0 else 'needs improvement'}
         - Revenue per dollar spent: ${total_revenue/total_spend:.2f}
+        
+        *Note: Configure Gemini API key for AI-powered insights*
         """
